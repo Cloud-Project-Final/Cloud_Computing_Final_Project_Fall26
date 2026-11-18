@@ -6,8 +6,8 @@ class Node(Stack):
 
     def __init__(
         self,
-        vpc: ec2.Vpc,
-        sec_group: ec2.SecurityGroup,
+        vpc: ec2.Vpc | None,
+        sec_group: ec2.SecurityGroup | None,
         scope: Construct,
         construct_id: str,
         **kwargs
@@ -16,34 +16,11 @@ class Node(Stack):
 
         # VPC Setup
         if vpc is None:
-            vpc = ec2.Vpc(
-                self,
-                "AppVpc",
-                max_azs=2,
-                nat_gateways=0,
-                subnet_configuration=[
-                    ec2.SubnetConfiguration(
-                        name="PublicSubnet",
-                        subnet_type=ec2.SubnetType.PUBLIC,
-                    )
-                ],
-            )
+            vpc = self._new_vpc()
 
         # Security Group Setup
         if sec_group is None:
-            sec_group = ec2.SecurityGroup(
-                self,
-                "InstanceSG",
-                vpc=vpc,
-                description="Allow SSH access",
-                allow_all_outbound=True,
-            )
-
-            sec_group.add_ingress_rule(
-                ec2.Peer.any_ipv4(),
-                ec2.Port.tcp(22),
-                "Allow SSH",
-            )
+            sec_group = self._new_security_group(vpc)
 
         # EC2 Instance
         instance = ec2.Instance(
@@ -63,3 +40,34 @@ class Node(Stack):
             "InstancePublicIp",
             value=instance.instance_public_ip,
         )
+
+    def _new_vpc(self) -> ec2.Vpc:
+        return ec2.Vpc(
+            self,
+            "AppVpc",
+            max_azs=2,
+            nat_gateways=0,
+            subnet_configuration=[
+                ec2.SubnetConfiguration(
+                    name="PublicSubnet",
+                    subnet_type=ec2.SubnetType.PUBLIC,
+                )
+            ],
+        )
+
+    def _new_security_group(self, vpc: ec2.Vpc) -> ec2.SecurityGroup:
+        new_group = ec2.SecurityGroup(
+            self,
+            "InstanceSG",
+            vpc=vpc,
+            description="Allow SSH access",
+            allow_all_outbound=True,
+        )
+
+        new_group.add_ingress_rule(
+            ec2.Peer.any_ipv4(),
+            ec2.Port.tcp(22),
+            "Allow SSH",
+        )
+
+        return new_group
