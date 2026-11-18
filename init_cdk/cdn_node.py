@@ -6,8 +6,8 @@ class Node(Stack):
 
     def __init__(
         self,
-        vpc: ec2.Vpc,
-        sec_group: ec2.SecurityGroup,
+        vpc: ec2.Vpc | None,
+        sec_group: ec2.SecurityGroup | None,
         scope: Construct,
         construct_id: str,
         **kwargs
