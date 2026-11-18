@@ -6,11 +6,12 @@ class Node(Stack):
 
     def __init__(
         self,
-        vpc: ec2.Vpc | None,
-        sec_group: ec2.SecurityGroup | None,
         scope: Construct,
         construct_id: str,
-        **kwargs
+        *,
+        vpc: ec2.Vpc | None = None,
+        sec_group: ec2.SecurityGroup | None = None,
+        **kwargs,
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
