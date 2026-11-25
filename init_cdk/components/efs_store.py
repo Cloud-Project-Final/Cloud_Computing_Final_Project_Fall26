@@ -6,7 +6,7 @@ from aws_cdk import (
 from constructs import Construct
 
 
-class ReplicatedEfsConstruct(Construct):
+class Storage(Construct):
 
     def __init__(
         self,

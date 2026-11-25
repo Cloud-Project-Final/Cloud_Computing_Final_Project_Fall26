@@ -1,8 +1,10 @@
 from aws_cdk import Stack, aws_ec2 as ec2, CfnOutput
 from constructs import Construct
 
+# TODO: Check security group settings!!
 
-class Node(Stack):
+
+class Node(Construct):
 
     def __init__(
         self,
