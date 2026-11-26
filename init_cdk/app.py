@@ -4,6 +4,9 @@ import aws_cdk as cdk
 from components import CDNStack
 
 app = cdk.App()
+
+# test = app.node.try_get_context("nodes_per_region")
+
 CDNStack(
     app,
     "CustomCDN",
