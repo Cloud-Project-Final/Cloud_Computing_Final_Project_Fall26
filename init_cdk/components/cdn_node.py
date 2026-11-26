@@ -29,7 +29,7 @@ class NodeType(Enum):
 
 
 class Node(Stack):
-    cdn_origin_ip: str
+    cdn_origin_ip: str = ""
 
     def __init__(
         self,
@@ -43,6 +43,11 @@ class Node(Stack):
         **kwargs,
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
+
+        if (
+            self.cdn_origin_ip and type is NodeType.ORIGIN
+        ):  # In the case a second origin is created
+            raise AttributeError("CDN Origin is already defined.")
 
         # VPC Setup
         if vpc is None:
@@ -127,9 +132,12 @@ class Node(Stack):
                     "sed -i '/^\\s*server {/,/^\\s*}/d' /etc/nginx/nginx.conf || true",
                     "systemctl enable --now nginx",
                 )
-            except AttributeError as e:
-                print("Likely did not create the origin stack before an edge.")
-                raise
+            except (
+                AttributeError
+            ):  # In the case that edge stack is defined before origin
+                raise AttributeError(
+                    "Likely did not create the origin stack before an edge."
+                )
         else:
             user_data.add_commands(
                 "dnf install -y nginx",
