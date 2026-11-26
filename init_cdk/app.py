@@ -2,12 +2,9 @@
 import os
 
 from aws_cdk import (
-    # Duration,
-    Stack,
     App,
     Environment,
 )
-from constructs import Construct
 from components import Node, NodeType
 
 REGIONS = {"origin": "us-east-1", "edge1": "us-west-1"}
