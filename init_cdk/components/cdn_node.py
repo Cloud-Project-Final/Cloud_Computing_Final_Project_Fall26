@@ -1,4 +1,4 @@
-from aws_cdk import Stack, aws_ec2 as ec2, CfnOutput
+from aws_cdk import Stack, aws_ec2 as ec2, CfnOutput, aws_iam as iam
 from constructs import Construct
 from enum import Enum
 
@@ -57,6 +57,17 @@ class Node(Stack):
         if sec_group is None:
             sec_group = self._new_security_group(type, vpc)
 
+        role = iam.Role(
+            self,
+            f"{type.name}_ROLE",
+            assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"),
+            managed_policies=[
+                iam.ManagedPolicy.from_aws_managed_policy_name(
+                    "AmazonSSMManagedInstanceCore"
+                )
+            ],
+        )
+
         user_data: ec2.UserData = self._get_user_data(type)
         subnets = vpc.public_subnets
 
@@ -72,6 +83,7 @@ class Node(Stack):
                     ec2.InstanceClass.T3, ec2.InstanceSize.MICRO
                 ),
                 machine_image=ec2.MachineImage.latest_amazon_linux2023(),
+                role=role,
                 user_data=user_data,
             )
             # Output EC2 IP
@@ -104,12 +116,6 @@ class Node(Stack):
             vpc=vpc,
             description="Allow SSH access",
             allow_all_outbound=True,
-        )
-
-        new_group.add_ingress_rule(
-            ec2.Peer.any_ipv4(),
-            ec2.Port.tcp(22),
-            "Allow SSH",
         )
 
         new_group.add_ingress_rule(
